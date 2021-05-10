@@ -1,0 +1,430 @@
+---
+title: "Gotta catch ’em all"
+output:
+  html_document:
+    df_print: paged
+---
+
+<br />
+<br />
+<br />
+**LIBRARIES**
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(hrbrthemes)
+library(viridis)
+```
+<br />
+<br />
+
+
+**PATH for the Excel file**
+```{r}
+Pokemon<-read.csv("C:\\Users\\Adrian\\Desktop\\DAB_Datasets\\Pokemon.csv")
+```
+<br />
+<br />
+
+**Dataset**
+
+```{r}
+glimpse(Pokemon)
+```
+The dataset consists of 75 observations and 27 variables.It gives us information about the  4 different Pokemon species.  <br />
+
+The variables are :- <br />
+
+name:                             &nbsp;(chr)&nbsp;     A unique name given to the Pokémon.<br />
+species:                          &nbsp;(chr)&nbsp;     The Pokémon’s type, e.g. Pidgey.<br />
+cp:                               &nbsp;(int)&nbsp;     Pre-evolution Combat Power, which is a summary of the Pokémon’s strength for battling prior to the evolution of the Pokémon.<br />
+hp:                               &nbsp;(int)&nbsp;     Pre-evolution Hit Points, which is a summary of how difficult it is to weaken the Pokémon in a battle.<br />
+weight:                           &nbsp;(dbl)&nbsp;     Pre-evolution weight, in kilograms.<br />
+height:                           &nbsp;(dbl)&nbsp;     Pre-evolution height, in meters.<br />
+power_up_stardust:                &nbsp;(int)&nbsp;     Pre-evolution stardust required to power up the Pokémon.<br />
+power_up_candy:                   &nbsp;(int)&nbsp;     Pre-evolution candy required to power up the Pokémon.<br />
+attack_weak:                      &nbsp;(chr)&nbsp;     The name of the pre-evolution weaker attack of the Pokémon.<br />
+attack_weak_type:                 &nbsp;(chr)&nbsp;     The type of the pre-evolution weaker attack.<br />
+attack_weak_value:                &nbsp;(int)&nbsp;     The damage done by the pre-evolution weaker attack.<br />
+attack_strong:                    &nbsp;(chr)&nbsp;     The name of the pre-evolution stronger attack.<br />
+attack_strong_type:               &nbsp;(chr)&nbsp;     The type of the pre-evolution stronger attack.<br />
+attack_strong_value:              &nbsp;(chr)&nbsp;     The damage done by the pre-evolution stronger attack.<br />
+cp_new:                           &nbsp;(int)&nbsp;     Post-evolution Combat Power.<br />
+hp_new:                           &nbsp;(int)&nbsp;     Post-evolution Hit Points.<br />
+weight_new:                       &nbsp;(dbl)&nbsp;     Post-evolution weight, in kilograms.<br />
+height_new:                       &nbsp;(dbl)&nbsp;     Post-evolution height, in meters.<br />
+power_up_stardust_new:            &nbsp;(int)&nbsp;Post-evolution stardust required to power up the Pokémon.<br />
+power_up_candy_new:               &nbsp;(int)&nbsp; Post-evolution candy required to power up the Pokémon.<br />
+attack_weak_new:                  &nbsp;(chr)&nbsp;The name of the post-evolution weaker attack.<br />
+attack_weak_type_new:             &nbsp;(chr)&nbsp;The type of the post-evolution weaker attack.<br />
+attack_weak_value_new:            &nbsp;(int)&nbsp; The damage done by the post-evolution weaker attack.<br />
+attack_strong_new:                &nbsp;(chr)&nbsp; The name of the post-evolution stronger attack.<br />
+attack_strong_type_new:           &nbsp;(chr)&nbsp;The type of the post-evolution stronger attack.<br />
+attack_strong_value_new:          &nbsp;(int)&nbsp;The damage done by the post-evolution stronger attack.<br />
+notes:                            &nbsp;(chr)&nbsp; Any additional notes made while collecting the data.<br />
+
+<br />
+<br />
+
+**Calculate the diference in heights pre and post evolution and save this as a new variable. Calculate the percentage of Pokémon that grew during evolution. Also visualize the distribution of change in height by species and provide a discussion of how change in height varies across species.**
+
+
+
+<br />
+To calculate the percentage of  height that the Pokemon grew, we need to calculate using the below formula
+<br />
+difference in height= new height(Post evolution) - original height(Pre evolution) <br/>
+percentage of growth = (difference in height/original height)*100
+<br />
+
+A new column growth_Percent is created with the calculations mentioned above.
+```{r}
+percent<-function(diff,original){
+    percent_value=((diff/original)*100)
+    #return(paste(percent_value,"%"))
+    return(percent_value)    
+}
+
+q1<-Pokemon %>%
+    mutate(diff_in_height=height_new-height,
+           growth_Percent=percent(diff_in_height,height))
+```
+
+<br/>
+Below is the dataset with new added column growth_percent
+```{r}
+q1
+
+```
+
+<br />
+<br />
+<br />
+Below is the evolution of the species based on the height.
+
+```{r}
+p1<-ggplot(q1 %>% filter(species=="Caterpie"),
+       aes(x = diff_in_height)) +
+  geom_histogram(bins = 4,fill="pink1", color="black")+
+  coord_cartesian(xlim = c(0,1))+
+  ggtitle("Evolution of Caterpie")+
+  labs(y = "Count",
+       x = "Difference in height")+
+  theme_minimal()
+
+p2<-ggplot(q1 %>% filter(species=="Weedle"),
+           aes(x = diff_in_height)) +
+  geom_histogram(bins=5,fill="coral3", color="black")+
+  coord_cartesian(xlim = c(0,1))+
+  ggtitle("Evolution of Weedle")+
+  labs(y = "Count",
+       x = "Difference in height")+
+  theme_minimal()
+
+
+
+p3<-ggplot(q1 %>% filter(species=="Pidgey"),
+       aes(x = diff_in_height)) +
+  geom_histogram(bins=5,fill="orchid4", color="black")+
+  coord_cartesian(xlim = c(0,1))+
+  ggtitle("Evolution of Pidgey")+
+  labs(y = "Count",
+       x = "Difference in height")+
+    theme_minimal()
+
+p4<-ggplot(q1 %>% filter(species=="Eevee"),
+       aes(x = diff_in_height)) +
+  geom_histogram(bins=4,fill="purple4", color="black",binwidth = 0.1)+
+  coord_cartesian(xlim = c(0,1))+
+  ggtitle("Evolution of Eevee")+
+  labs(y = "Count",
+       x = "Difference in height")+
+    theme_minimal()
+
+
+grid.arrange(p1,p2,p3,p4)
+
+```
+ <br/>
+**Description**
+<br/>
+The histogram above denotes the distribution of the difference of height(Post evolution -Pre evolution). It can be concluded that "Pidgey" is the tallest among the other species with the mean height of about 0.8. "Eveee" is the second tallest specie.  <br/>"Caterpie" and "Weedle" have shown similarities in growth of height. <br/>
+Varibales used - 
+                X axis- Difference of height
+                Y axis- Count of the species 
+
+<br/>                 
+**Observation**
+1)"Pidgey" show symmetric and unimodal distribution.<br/>
+2)"Caterpie" shows  unimodal distribution. <br/>
+2)"Weedle" shows bimodal distribution .<br/>
+3) "Eevee" shows right skewness and unimodal distribution. <br/>
+* There is insufficient data in "Eevee" to mark the 1 value as an outlier
+
+
+<br />
+<br />
+<br />
+
+
+--------------------------------------------------------------------------------
+
+**Recreate the following plot**
+<br />
+
+```{r}
+Ex2<-Pokemon %>%
+     filter(species %in% c("Caterpie","Eevee","Pidgey"))%>% 
+     group_by(species) %>% 
+    summarise(attack_weak)
+
+
+ggplot(Ex2, mapping=aes(y=Ex2$species,fill=attack_weak))+
+  geom_bar(stat="count", 
+           position="dodge")+
+  labs(x="Frequency", y="Species",
+       title = "Pre-evolution weaker attack of the Pokemon by species")+
+  guides(fill=guide_legend(title="Attack Weak"))
+
+```
+<br/>
+**Description**
+<br/>
+The plot depicts the Pre-evolution attacks of the Pokemon. In the above mentioned plot only 3 species are considered namely - "Pidgey","Eevee","Caterpie".
+
+ <br/>
+**Observation**
+<br/>
+The weaker attacks for "Pidgey" and "Eevee" is Tackle,Quick attack whereas for Caterpie is Tackle and Bug bite.
+<br />
+<br />
+<br />
+
+--------------------------------------------------------------------------------
+
+**Pick two categorical variables and make a bar plot that depicts the relationship between them. These can be variables from the original data or ones that you create based on the given data.**
+
+
+<br />
+<br />
+The below plot depicts the relationship between 2 categorical variables species and attack strong type.<br/>
+
+
+```{r}
+
+Ex3 <- Pokemon %>% 
+  group_by(species) %>% 
+  summarise(attack_strong_type)
+
+
+ggplot(data=Ex3, mapping=aes(x=species,fill=attack_strong_type))+
+  geom_bar(stat="count")+
+  scale_fill_viridis(discrete=TRUE, name="") +
+  labs(x="Species", y="Frequency",
+       title = "Pre-evolution strong attack type of the Pokemon by species")+
+  guides(fill=guide_legend(title="Attack strong type"))
+
+```
+<br/>
+**Description**
+<br/>
+The attack strong type is the stronger attack of the Pokemon before evolution.
+We have plotted the species and their corresponding stronger attack type pre evolution.
+<br/>
+
+**Observation**
+ <br/>
+1)From the above plot we can conclude that "Caterpie" and "Weedle" have Normal as the  stronger attack types.<br/>
+2)In case of "Pidgey" the stronger attack types are Flying and Dragon.<br/>
+3)Whereas in case of  Eevee the stronger attack types are Normal and Ground.<br/>
+ 
+
+
+--------------------------------------------------------------------------------
+
+
+***Pick a numerical and a categorical variable, and construct side-by-side box plots depicting the relationship between them. ***
+
+```{r}
+   Ex4<-Pokemon %>% 
+      group_by(species) %>% 
+      summarise(cp)
+
+ggplot(data=Ex4, aes(x=species,y=cp,fill=species))+
+  geom_boxplot(width=0.25)+
+  labs(x="Species", y="CP(Pre-evolution Combat Power)")+
+  guides(fill=guide_legend(title="Species"))
+```
+ <br/>
+**Description**
+<br/>
+  The above mentioned box plot represents the different species along with the pre evolution combat power.<br/>
+
+Using the above box plot we can draw conclusions. <br/>
+1)The line in the middle denotes the median value of that specie(Q2). <br/>
+2)The line below the box  is the minimum value. <br/>
+3)The line above the box  is the maximum value. <br/>
+4)The start of the box shows the Q1(25 Percentile). <br/>
+5)The end of the box shows the Q3(75 Percentile). <br/>
+6)The difference betweeen Q1 and Q3 is the box or the Interquartile range(IQR). <br/>
+
+<br/>
+
+**Observation**
+ <br/>
+1)"Eevee" and  "Pidgey" have the highest comabat power.</br>
+2)The min value for "Eevee" is about 500 making it the most powerful specie.</br>
+3)The median value is denoted by the black line inside the box. In case of "Pidgey" it is close to 200. </br>
+4)The Q1 for "Caterpie" is the lowest.</br>
+
+
+
+
+---
+---
+
+</br>
+</br>
+</br>
+
+
+--------------------------------------------------------------------------------
+
+**Learn something new: violin plots! Read about them at http://ggplot2.tidyverse.org/reference/geom_violin.html, and convert your side-by-side box plots from the previous task to violin plots. What do the violin plots reveal that box plots do not? What features are apparent in the box plots but not in the violin plots?**
+
+```{r}
+
+library(hrbrthemes)
+library(viridis)
+extrafont::loadfonts(device="win")
+
+ggplot(data=Ex4, aes(x=species,y=cp,fill=species))+
+  geom_violin(trim = FALSE,bw =40)+
+  geom_boxplot(width=0.25)+
+  #theme_ipsum() +
+  #scale_fill_viridis(discrete = TRUE) +
+  
+  labs(x="Species", y="CP(Pre-evolution Combat Power)")+
+  guides(fill=guide_legend(title="Species"))
+  
+```
+
+**Description**
+ The above plot is a violin representation of the box plot. It denotes the pre-evolution combat power of every species.
+
+**Observation**
+From the above Violin plot we can  visualize the distribution of a numeric variable for one or several species. In the above case each violin represents a specie. The shape  denotes the density of the spieces.
+It denotes how many data points in that range.It is like a mirror image of the density plot with a box plot inside . <br/>
+Using the plot we can conclude that more data points are present for "Caterpie" between the range 150-200. For "Eevee" the max data points are visible around the 500 mark. The larger the range the larger the violin. <br/>
+It can provide a more insights and provides more understanding of the distribution. <br/>
+
+Key features- <br/>
+1)Full distribution of the data points. <br/>
+2)Density of the points at different values.  <br/>
+
+-------------------------------------------------------------------------
+**What characteristics correspond to an evolved Pokémon with a high combat power? You do not need to come up with an exhaustive list, but you should walk us through your reasoning for answering this question and include all relevant summary statistics and visualizations.**
+
+<br/>
+First let us get the summary statistics to analyze the pre vs post evolution. In the example below we are making use of hit points. - Hit point is the power required to power up a Pokemon.
+
+<br/>
+We are making use of the summarize() to find the  mean of the combat power.
+Using the results we will utilize the top 2 largest mean values which will denote species of  higher combat power.
+```{r}
+
+Pokemon %>% 
+  group_by(species) %>% 
+  summarise(Mean_cp=mean(cp)) %>% 
+  arrange(desc(Mean_cp))
+```
+<br/>
+We can conclude hat "Eevee" and "Pidgey" have the highest combat power. Therefore we will consider the Hit power (HP) of these species to determine their characteristics.
+
+
+<br />
+<br />
+First let us check the summary statistics for all species.
+
+```{r}
+
+#summary statistics
+print(summary(Pokemon$hp))
+print(summary(Pokemon$hp_new))
+
+Pokemon %>% 
+  group_by(species) %>% 
+  summarise(max(hp),max(hp_new)) 
+
+  
+```
+
+<br />
+Summary1 -deontes the pre evolution Hit power (The power required to power up a Pokemon )<br />
+Summary2-deontes the post evolution Hit power (The power required to power up a Pokemon )<br />
+
+From the summary statistics  above we can determine the following <br />
+1)The Minimum value has not decreased post evolution.<br />
+2)The Maximum value has increased post evolution signalling more HP is required due to more power. <br />
+3)The Mean,Median,1st quartile,3rd quartile has also increased <br />
+All the above points signal that  higher the  CP, higher HP(Hit power is also higher)
+
+
+<br />
+<br />
+
+
+
+Let us visualize to rectify the conclusions made through summary statistics
+```{r}
+
+
+Ex6a<-Pokemon %>% 
+      filter(species %in% c ("Eevee","Pidgey")) %>%
+      summarise(species,hp,hp_new)
+      
+#Pre evolution       
+p6a<-ggplot(data=Ex6a , aes(x=species,y=hp,fill=species))+
+      geom_boxplot(width=0.25)+
+      stat_summary(fun.y=mean, geom="point", shape=20, size=5,
+                   color="red",  fill="red") +
+      labs(x="Species", y="HP(Pre-evolution Hit Power)")+
+      guides(fill=guide_legend(title="Species"))
+      
+
+#Post evolution
+p6b<-ggplot(data=Ex6a , aes(x=species,y=hp_new,fill=species))+
+      geom_boxplot(width=0.25)+
+      stat_summary(fun.y=mean, geom="point", shape=20, size=5,
+                   color="red",  fill="red")+
+      labs(x="Species", y="HP(Post-evolution Hit Power)")+
+      guides(fill=guide_legend(title="Species"))
+      
+grid.arrange(p6a,p6b)
+
+```
+
+**Observation**
+<br/>
+The red dot denotes the mean. <br/>
+   
+    
+    1) For Pidgey -
+               a)The mean value in Pre-evolution = 37 whereas  Post evolution = 59(approx) .
+               b)The min value in Pre-evolution = 10 whereas  Post evolution = 13. 
+               c)The max value in Pre-evolution = 56 whereas  Post evolution = 84
+
+     2) For Evee - 
+              a)The  mean value in Pre-evolution = 70 whereas  Post evolution =110 (approx).
+              b)The min value in Pre-evolution = 64 whereas  Post evolution = 75.
+              c)The max value in Pre-evolution = 74 whereas  Post evolution = 165.
+
+
+<br/>
+Using the above conclusions and the box plot we can state that with higher combat power the characteristics of hit power has also increased.
+
+
+---------------------------------------------------------------------------------
+
