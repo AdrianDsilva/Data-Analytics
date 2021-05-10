@@ -1,0 +1,208 @@
+---
+title: "Top 250 Football Transfers"
+output:
+  html_document:
+    df_print: paged
+---
+
+<br />
+<br />
+<br />
+**LIBRARIES**
+
+```{r}
+library(tidyverse,warn.conflicts = FALSE)
+library(ggplot2,warn.conflicts = FALSE)
+library(gganimate,warn.conflicts = FALSE)
+library(dplyr,warn.conflicts = FALSE)
+library("readxl")
+```
+<br />
+<br />
+
+
+**PATH for the Excel file**
+```{r}
+TransferFees_Football<-read_excel("C:\\Users\\Adrian\\Desktop\\DAB_Datasets\\TransferFees_Football.xlsx")
+```
+<br />
+<br />
+
+
+
+**Data Cleaning**
+<br />
+In the column League_to , we have 1.Bundesliga- First Div , 2.Bundesliga-Second Div etc. <br />
+Since I am only making use of the First Div football,I have cleaned the variable 
+League_to from "1.Bundesliga" to "Bundesliga" <br />
+```{r}
+TransferFees_Football<-TransferFees_Football%>%
+  mutate(League_to = replace(League_to, League_to == "1.Bundesliga", "Bundesliga"))
+
+#check if 1.Bundesliga  is replaced
+TransferFees_Football%>%
+  filter(League_to=="1.Bundesliga")
+```
+
+
+
+**Dataset**
+
+```{r}
+glimpse(TransferFees_Football)
+```
+The dataset consists of 4700 observations and 9 variables.It gives us information about the top 250 Football Transfers between 2000-2018  <br />
+The variables are - <br />
+1)Name           &nbsp; (chr) &nbsp;   - Name of the player which was sold <br />
+2)Position       &nbsp; (chr) &nbsp;   - Playing position of player <br />
+3)Player Age     &nbsp; (dbl) &nbsp;   - Age of the player <br />
+4)Team_from      &nbsp; (chr) &nbsp;   - The selling team <br />
+5)League_from    &nbsp; (chr) &nbsp;   - The selling League <br />
+6)Team_to        &nbsp; (chr) &nbsp;   - The buying team <br />
+7)League_to      &nbsp; (chr) &nbsp;   - The buying League <br />
+8)Season         &nbsp; (chr) &nbsp;   - Season of the transfer <br />
+9)Transfer_fee   &nbsp; (dbl) &nbsp;   - The selling price of the player<br />
+<br />
+<br />
+<br />
+
+
+
+
+
+
+
+**Provide output for the head(), tail(), and summary() commands for your data set.**
+
+
+**head()**
+<br />
+The head() function in R is used to display the first n values of the dataset. We can specify the number of observations we want to view using custom head
+Example - [head(TransferFees_Football),n]
+In this example we can use any integer value for n. The number of observations to be returned depends on the value of n
+
+In our case we have returned the top 6 (default-6) observations of our data set.  
+```{r}
+head(TransferFees_Football)
+```
+
+<br />
+<br />
+<br />
+
+
+
+**tail()**
+<br />
+The tail() function in R is used to display the last n values of the dataset. We can specify the number of observations we want to view using custom tail
+Example - [tail(TransferFees_Football),n]
+In this example we can use any integer value for n. The number of observations to be returned depends on the value of n
+
+In our case we have returned the bottom 6 (default-6) observations of our data set.  
+
+```{r}
+tail(TransferFees_Football)
+```
+
+<br />
+<br />
+<br />
+
+**summary()**
+<br />
+It is used to summarize all the values in  the dataset.It provides a summary with the objective of a quick glance.
+The summary below provides mean,median,min,max,Data Type,length etc.
+```{r}
+summary(TransferFees_Football)
+```
+
+<br />
+<br />
+<br />
+
+--------------------------------------------------------------------------------
+
+**Create 2 exploratory type questions and provide the code and output for the corresponding answers. Each answer must use at least two of the following dplyr verbs: filter(), mutate(), summarize(), and group_by(). (Along the lines of Exercises 11-16 in R4DS_Chapter_5d.html.) Please avoid overly simplistic questions.**
+
+
+<br />
+<br />
+**1.Among the top 5 leagues in Europe, which leagues have payed the            highest transfer fees and  what is the avg age of those                   players**
+
+**Define the top 5 Leagues in Europe**
+<br />
+The top 5 leagues in Europe constists of  <br />
+Serie A - First Division of Italy   <br />
+LaLiga - First Division of Spain <br />
+Premier League  - First Division of England   <br />
+Ligue 1 - First Division of France  <br />
+1.Bundesliga - First Division of  Germany <br />
+```{r}
+Top_Euro_Countries<-c("Serie A","LaLiga",'Premier League','Ligue 1','Bundesliga')
+```
+
+***Extract the top 5 Leagues in Europe with their Highest transfer fees and average age ***
+```{r}
+   Q1 <- TransferFees_Football %>% 
+          filter(League_to %in% Top_Euro_Countries) %>% 
+            group_by(League_to) %>% 
+          summarise(Mean_Age=(mean(`Player Age`)),Mean_Transfer=mean((Transfer_fee))) %>% 
+          mutate(Round_Age=round(Mean_Age)) %>%
+          arrange(desc(Mean_Age),desc(Mean_Transfer)) 
+
+Q1
+```
+**Description**
+  In the above question we need to find max transfer and the average age of players in the transfer market based on their respective league.<br />
+  Verbs used - filter(),group_by(),summarize(),mutate()    <br />
+  1)Filter the top 5 Leagues in Europe.  <br />
+  2)Group By the league.     <br />
+  3)Summarize the mean of Age and the transfer fee.<br />
+  4)The Mutate function is used to add the rounded value of the Mean_Age  <br />
+  5)To get highest fees- order by descending values.<br />
+
+**Observation**
+It can be clearly noted that the above mentioned leagues in Europe prefer players in
+their mid 20s. The Premier League has spent the most in the market whereas the Bundesliga has invested the least among the top 5 leagues
+
+
+---
+---
+
+</br>
+</br>
+</br>
+
+**2.From the year 2000-2018 which clubs has spent  over 100 million in the transfer market and name the player**
+
+```{r}
+
+  sales_over100mil<-  TransferFees_Football %>%
+        filter(Transfer_fee>100000000) %>% 
+        group_by(Team_from,Transfer_fee,Team_to) %>% 
+        summarise(Name=unique(Name)) %>% 
+        arrange(desc(Transfer_fee))
+
+sales_over100mil
+  
+```
+
+**Description**
+ In this question we need the top  teams which spent over 100 mil <br />
+Verbs used - filter(),group_by(),summarize(),arrange()    <br />
+1)First we need to filter the teams which have spent over 10 million.   <br />
+2)Group by to get the Team that spent the amount(Team_to)<br />
+3)Summarize to get the player name    <br />
+4)Arrange in descending order to get the maximum first.    <br />
+
+**Observation**
+Based on the exploratory output.We can conclude that Paris SG,FC Barcelona,Juventus,
+Man Utd & Real Madrid have spent the most in the transfer market. Another observation is that FC Barcelona,Juventus,Real Madrid have  received 100mil+ from player sales.
+
+
+---
+---
+
+
+---------------------------------------------------------------------------------
+
